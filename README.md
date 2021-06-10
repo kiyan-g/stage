@@ -9,9 +9,9 @@ En effet, l’analyse fondamentale se préoccupe à la fois des publications éc
 
 Lors de mon stage dans le pôle « Gestion quantitative » au sein de l’entreprise LBPAM, je vais : 
   - utiliser python 3.9
-	- utiliser github
-	- utiliser yahoo finance
-	- construire des modèles informatiques qui permettent d’aider à la décision d’achat/vente 
+  - utiliser github
+  - utiliser yahoo finance
+  - construire des modèles informatiques qui permettent d’aider à la décision d’achat/vente 
 
 ## Outils
 
