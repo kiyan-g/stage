@@ -16,9 +16,9 @@ Lors de mon stage dans le pôle « Gestion quantitative » au sein de l’entrep
 ## Outils
 
 Pour mes codes j’aurai besoin d’utiliser plusieurs librairies python.
-   - Sickitlearn:
-   - Numpy:
-   - Pandas:
-   - Matplotlib:
-   - TA-lib:
+   - Sickit-learn (0.24.2) : utilisé pour le machine learning et l'analyse prédictive
+   - Numpy (1.20.3) : utilisé pour manipuler les matrices et des fonctions mathématiques
+   - Pandas (1.2.4) : utilisé pour manipuler les dataframes
+   - Matplotlib (3.4.2) : utilisé pour tracer et visualiser des données sous formes de graphiques
+   - TA-lib (0.7.0) : utilisé pour effectuer des analyses techniques sur des données du marché financier
 
