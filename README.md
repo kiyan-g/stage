@@ -16,9 +16,9 @@ Lors de mon stage dans le pôle « Gestion quantitative » au sein de l’entrep
 ## Outils
 
 Pour mes codes j’aurai besoin d’utiliser plusieurs librairies python.
-Sickitlearn:
-Numpy:
-Pandas:
-Matplotlib:
-TA-lib:
+   - Sickitlearn:
+   - Numpy:
+   - Pandas:
+   - Matplotlib:
+   - TA-lib:
 
