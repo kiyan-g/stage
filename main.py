@@ -12,15 +12,15 @@ bitcoin = pd.read_csv('BTC-EUR.csv', index_col='Date', parse_dates= True)
 bitcoin = bitcoin.dropna()
 bitcoin.head()
 bitcoin['Close'].plot()
-#plt.show()
+plt.show()
 
 
 # Essai ta-lib avec moyenne glissante
 Bc = talib.SMA(bitcoin['Close'].values, timeperiod=30)
-plt.plot(Bc, label='Bitcoin')
+plt.plot(Bc, label='SMA Bitcoin')
 plt.plot(bitcoin['Close'].values,label='Price')
 plt.legend(loc='best')
-#plt.show()
+plt.show()
 
 
 # Essai ta-lib 2 avec RSI et BBands
@@ -35,24 +35,23 @@ def bbp_fonc(donnees):
         bbp += [(donnees['Close'][i] - low[i]) / (up[i] - low[i])]
     return bbp
 
-#print(bbp_fonc(bitcoin)[20:40])
+print(bbp_fonc(bitcoin)[20:40])
 
 # Création d'un dataframe du RSI pour diff valeurs de 'timeperiod'
 def rsi_frame(donnees, n):
     Rsi_f = []
-    c = range(2, n)
-    for i in range(2,n):
-        Rsi_f += RSI(donnees['Close'].values, timeperiod=i)
+    c = ['period ='+str( i) for i in range (2,n+1)]
+    for i in range(2,n+1):
+        Rsi_f.append(RSI(donnees['Close'].values, timeperiod=i))
     Rsi_ft = np.transpose(Rsi_f)
-    Rsi_frame = pd.DataFrame(Rsi_ft, columns=c ) 
+    Rsi_frame = pd.DataFrame(Rsi_ft, index= donnees.index.values ,columns=c )
     return Rsi_frame
 
-Rindice = rsi_frame(bitcoin, 20)
-Rindice.head()
 
-#index=donnees['Date']
+Rindice = rsi_frame(bitcoin, 20)
+print(Rindice.head())
+print(Rindice)
 
 
 ##mettre bitcoin et moyenne glissante sur le mm graphique ac la date en abs
-##resoudre le pb du Rsi_frame
 ##faire les frames des autres indicateurs du mail
