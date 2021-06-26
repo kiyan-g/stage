@@ -22,3 +22,9 @@ Pour mes codes j’aurai besoin d’utiliser plusieurs librairies python.
    - Matplotlib (3.4.2) : utilisé pour tracer et visualiser des données sous formes de graphiques
    - TA-lib (0.7.0) : utilisé pour effectuer des analyses techniques sur des données du marché financier
 
+## Partie 1
+
+L’objectif de cette partie est de réaliser un « backtesting » sur le bitcoin, càd tester notre stratégie et l’optimiser sur des anciennes données réelles pour ensuite l’utiliser sur des données futures. Apres avoir étudié et compris les différents indicateurs comme le RSI ou le EMA, j’ai construit des dataframes pour chaque indicateur en modifiant juste les périodes.
+
+Ensuite je dois évaluer la qualité des indicateurs en fonction du cours que j’ai choisi, ici le bitcoin, afin de construire ma propre stratégie de marché. Pour cela je vais d’abord séparer mes données en « training » et « test » pour évaluer mes indicateurs sur des données passées. De plus, je construis une colonne ‘predictive price’ comportant des valeurs binaires sur chaque jour et indiquant la tendance (1 si ça monte, 0 sinon). Puis, à l’aide de ‘sklearn’ j’importe différents modèles de classification (comme ‘RandomForestClassifier’) qui me permettront de classer les indicateurs du plus au moins fiable.
+
