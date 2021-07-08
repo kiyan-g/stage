@@ -25,12 +25,11 @@ plt.show()
 
 
 # Essai ta-lib avec moyenne glissante
-Bc = talib.SMA(bitcoin['Close'].values, timeperiod=30)
+Bc = talib.SMA(bitcoin['Close'], timeperiod=30)
+plt.plot(bitcoin['Close'],label='Price')
 plt.plot(Bc, label='SMA Bitcoin')
-plt.plot(bitcoin['Close'].values,label='Price')
 plt.legend(loc='best')
 plt.show()
-##mettre bitcoin et moyenne glissante sur le même graphique ac la date en abs
 
 
 # Essai ta-lib 2 avec RSI et BBands
@@ -82,6 +81,7 @@ Roc_indice = roc_frame(bitcoin, 20)
 ## Essai algo de classification
 Btc = pd.read_csv('BTC-USD.csv', index_col='Date', parse_dates= True)
 Btc = Btc.dropna()
+Btc = Btc.iloc[::3,:]  #permet de sauter des jours
 
 Btc['sma_10'] = SMA(Btc['Close'], timeperiod=10)
 Btc['sma_20'] = SMA(Btc['Close'], timeperiod=20)
@@ -95,7 +95,7 @@ Btc['ema_50'] = EMA(Btc['Close'], timeperiod=50)
 Btc['ema_100'] = EMA(Btc['Close'], timeperiod=100)
 Btc['ema_200'] = EMA(Btc['Close'], timeperiod=200)
 
-Btc['ATR'] = ATR(Btc['High'].values, Btc['Low'].values, Btc['Close'].values, timeperiod=14)
+Btc['ATR'] = ATR(Btc['High'].values, Btc['Low'].values, Btc['Close'].values, timeperiod=14) #pouvoir changer timep
 Btc['ADX'] = ADX(Btc['High'].values, Btc['Low'].values, Btc['Close'].values, timeperiod=14)
 Btc['CCI'] = CCI(Btc['High'].values, Btc['Low'].values, Btc['Close'].values, timeperiod=14)
 Btc['ROC'] = ROC( Btc['Close'].values, timeperiod=14)
@@ -105,6 +105,9 @@ Btc['WILLR'] = WILLR(Btc['High'].values, Btc['Low'].values, Btc['Close'].values,
 Btc = Btc.dropna()
 print(Btc.head(-1))
 
+# construction de signaux à utiliser à la place des indicateurs
+# par ex: Rsi>70 -> 0 et Rsi<30 -> 1 ou SMA_10>SMA_50 -> 1 et SMA_10<SMA_50 -> 0
+
 Btc['pred_price']= np.where(Btc['Close'].shift(-1)> Btc['Close'], 1, 0)
 
 
@@ -112,7 +115,7 @@ Btc['pred_price']= np.where(Btc['Close'].shift(-1)> Btc['Close'], 1, 0)
 x = Btc.drop(columns='pred_price')
 y = Btc['pred_price']
 
-train_x = x['2015-04-08':'2019-09-21']
+train_x = x['2015-04-08':'2019-09-21']  #début, milieu et fin
 test_x = x['2019-09-22':'2021-06-21']
 train_y = y['2015-04-08':'2019-09-21']
 test_y = y['2019-09-22':'2021-06-21']
@@ -127,16 +130,16 @@ print("\n")
 
 # on utilise les modèles de classification
 dict_classifiers = {
-    "Logistic Regression": LogisticRegression(solver='lbfgs', max_iter=5000),
+    "Logistic Regression": LogisticRegression(solver='lbfgs', max_iter=100),
     "Nearest Neighbors": KNeighborsClassifier(),
-    "Support Vector Machine": SVC(gamma='auto'),
+
     "Decision Tree": DecisionTreeClassifier(),
     "Random Forest": RandomForestClassifier(n_estimators=100),
     "Neural Net": MLPClassifier(solver='adam', alpha=0.0001,
                                 learning_rate='constant', learning_rate_init=0.001),
     "Naive Bayes": GaussianNB(),
 }
-
+#"Support Vector Machine": SVC(gamma='auto'),
 nb_classifiers = len(dict_classifiers.keys())
 
 def batch_classify(train_x_scaled, train_y, verbose= True):
@@ -164,25 +167,89 @@ print("\n Results classifiers\n", Btc_results.sort_values(by='train_score'))
 # on exécute notre stratégie sur la partie test
 test_x_scaled = scaler.fit_transform(test_x)
 print("\ntest\n", test_x_scaled)
-log_reg = LogisticRegression(solver= 'lbfgs', max_iter=5000)
-log_reg.fit(train_x_scaled, train_y)
-predictions = log_reg.predict(test_x_scaled)
-print("accuracy score:")
-print(accuracy_score(test_y, predictions))
-print("confusion matrix:")
-print(confusion_matrix(test_y, predictions))
-print("classification report:")
-print(classification_report(test_y, predictions))
+a = []
+pred = []
+for key, classifier in dict_classifiers.items():
+    log_reg = classifier
+    log_reg.fit(train_x_scaled, train_y)
+    predictions = log_reg.predict(test_x_scaled)
+    pred += [predictions]
+    print(key + " accuracy score:")
+    print(accuracy_score(test_y, predictions))
+    a += [accuracy_score(test_y, predictions)]
+    print("confusion matrix:")
+    print(confusion_matrix(test_y, predictions))
+    a += [confusion_matrix(test_y, predictions)]
+    print("classification report:")
+    print(classification_report(test_y, predictions))
 
-
-# ROC curve
-y_pred_proba = log_reg.predict_proba(test_x_scaled)[:,1]
-fpr, tpr, threshold = roc_curve(test_y, y_pred_proba)
-roc_auc = auc(fpr, tpr)
-print('\n roc auc is:'+ str(roc_auc), '\n')
+print (pred )
+# ROC curve et son aire sous la courbe appelée AUC
+b = []
+for key, classifier in dict_classifiers.items():
+    y_pred_proba = classifier.predict_proba(test_x_scaled)[:,1]
+    fpr, tpr, threshold = roc_curve(test_y, y_pred_proba)
+    roc_auc = auc(fpr, tpr)
+    print( str(key) +' roc auc is:'+ str(roc_auc), '\n')
+    b += [roc_auc]
+    plt.plot(fpr,tpr, label= key)  #pb de labels
 plt.plot([0,1], [0,1], 'k--')
-plt.plot(fpr,tpr)
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('ROC curve')
 plt.show()
+
+
+# Les bénéfices réalisés par chaque classifieur (pas en return)
+def benef(dic, data):
+    c = []
+    for key, classifier in dic.items():
+        moula = 0
+        cla = classifier
+        cla.fit(train_x_scaled, train_y)
+        predic = cla.predict(test_x_scaled)
+        donnee = data['Close'][-len(predic) - 1:]
+        for i in range (len(predic)):
+            if predic[i] == 1:
+                moula += donnee[i+1] - donnee[i]
+        print(key +' : '+ str(moula)+'$')
+        c += [moula]
+    return c
+
+c = benef( dict_classifiers, Btc)
+print(c)
+
+
+# création d'un tableau permettant de choisir les meilleurs classifieurs
+clas = []
+A =[]
+B =[]
+a = a[::-1]
+b = b[::-1]
+c = c[-6:]
+c = c[::-1]
+for key, classifier in dict_classifiers.items():
+    clas += [[c.pop(), b.pop(), a.pop(), a.pop() ]]
+    A += [key]
+tab_cla = pd.DataFrame(clas, index= A,
+                       columns= ['benefit', 'auc', 'accuracy score',
+                                 'confusion matrix'])
+
+pd.set_option('display.max_columns', None)
+print('\n', tab_cla)
+
+
+# nouvelle prédiction de la hausse avec la règle d'aggrégation 2/3
+top_clas= pred[0]+ pred[4]+ pred[5]  #creer une fonction qui choisi d'elle-même les n meilleurs
+final_clas = []
+for k in range(len(top_clas)):
+    if top_clas[k] >=2 :
+        final_clas += [1]
+    else:
+        final_clas+= [0]
+print(final_clas)
+argent = 0
+for i in range(len(final_clas)):
+    if final_clas[i] == 1:
+        argent+= Btc['Close'][-len(final_clas)+i+1] -Btc['Close'][-len(final_clas)+i]
+print('benefice total' + ' : ' + str(argent) +'$')
